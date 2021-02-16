@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "245786521915",
+    "firebase_url": "https://ecomproject-daeb7.firebaseio.com",
+    "project_id": "ecomproject-daeb7",
+    "storage_bucket": "ecomproject-daeb7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245786521915:android:781128ad7c3c55f4f3871e",
+        "android_client_info": {
+          "package_name": "com.tritone.ecom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "245786521915-s69d4kbru7pm5fv32mojrkq5igdmjfji.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuxkz_7gJ_E4kxy9pAi61bEDR74Z4VSFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "245786521915-s69d4kbru7pm5fv32mojrkq5igdmjfji.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
