@@ -7,39 +7,18 @@ import 'package:ecom/src/ui/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProductItem extends StatelessWidget {
-  // final String id;
-  // final String title;
-  // final String imageUrl;
-
-  // const ProductItem(
-  //   this.id,
-  //   this.title,
-  //   this.imageUrl,
-  // );
-
   @override
   Widget build(BuildContext context) {
-    final product = Provider.of<IndividualProduct>(context, listen: false);
-    final cart = Provider.of<CartProvider>(context, listen: false);
-    final authData = Provider.of<AuthProvider>(context, listen: false);
-    // print('product rebuilds');
+    final IndividualProduct product = Provider.of<IndividualProduct>(context);
+    final CartProvider cart = Provider.of<CartProvider>(context);
+    final AuthProvider authData = Provider.of<AuthProvider>(context);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
-        child: GestureDetector(
-          onTap: () {
-            Navigator.of(context).pushNamed(
-              ProductDetailScreen.routeName,
-              arguments: product.id,
-            );
-          },
-          child: Image.network(
-            product.imageUrl,
-            fit: BoxFit.cover,
-          ),
-        ),
         header: Consumer<IndividualProduct>(
-          builder: (ctx, product, _) => GridTileBar(
+          builder: (BuildContext context, IndividualProduct product, _) =>
+              GridTileBar(
             leading: IconButton(
               icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -67,8 +46,8 @@ class ProductItem extends StatelessWidget {
               Scaffold.of(context).hideCurrentSnackBar();
               Scaffold.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Added item to cart'),
-                  duration: Duration(seconds: 2),
+                  content: const Text('Added item to cart'),
+                  duration: const Duration(seconds: 2),
                   action: SnackBarAction(
                     label: 'UNDO',
                     onPressed: () {
@@ -78,6 +57,18 @@ class ProductItem extends StatelessWidget {
                 ),
               );
             },
+          ),
+        ),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              ProductDetailScreen.routeName,
+              arguments: product.id,
+            );
+          },
+          child: Image.network(
+            product.imageUrl,
+            fit: BoxFit.cover,
           ),
         ),
       ),

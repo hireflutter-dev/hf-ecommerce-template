@@ -6,55 +6,52 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatelessWidget {
-  static const routeName = '/cartScreen';
+  static const String routeName = '/cartScreen';
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context);
+    final CartProvider cart = Provider.of<CartProvider>(context);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Your Cart'),
-        ),
-        body: Column(
-          children: <Widget>[
-            Card(
-              margin: EdgeInsets.all(10),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Total',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    Spacer(),
-                    Chip(
-                      label:
-                          Text('\INR ${cart.totalAmount.toStringAsFixed(2)}'),
-                      backgroundColor: Theme.of(context).primaryColor,
-                    ),
-                    OrderNowButton(cart: cart),
-                  ],
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Cart'),
+      ),
+      body: Column(
+        children: <Widget>[
+          Card(
+            margin: const EdgeInsets.all(10),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  const Text(
+                    'Total',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  const Spacer(),
+                  Chip(
+                    label: Text('INR ${cart.totalAmount.toStringAsFixed(2)}'),
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  OrderNowButton(cart: cart),
+                ],
               ),
             ),
-            SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemBuilder: (ctx, i) => CartItemWidget(
-                  cart.items.values.toList()[i].id,
-                  cart.items.keys.toList()[i],
-                  cart.items.values.toList()[i].price,
-                  cart.items.values.toList()[i].quantity,
-                  cart.items.values.toList()[i].title,
-                ),
-                itemCount: cart.itemCount,
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemBuilder: (BuildContext context, int i) => CartItemWidget(
+                cart.items.values.toList()[i].id,
+                cart.items.keys.toList()[i],
+                cart.items.values.toList()[i].price,
+                cart.items.values.toList()[i].quantity,
+                cart.items.values.toList()[i].title,
               ),
+              itemCount: cart.itemCount,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -73,7 +70,7 @@ class OrderNowButton extends StatefulWidget {
 }
 
 class _OrderNowButtonState extends State<OrderNowButton> {
-  var _isLoading = false;
+  bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     return FlatButton(
@@ -88,22 +85,25 @@ class _OrderNowButtonState extends State<OrderNowButton> {
                   .addOrder(
                 widget.cart.items.values.toList(),
                 widget.cart.totalAmount,
-              );
+              )
+                  .then((String value) {
+                if (value == 'success') {
+                  widget.cart.clearCart();
+
+                  Navigator.of(context).pushNamed(OrdersScreen.routeName);
+                }
+              });
 
               setState(() {
                 _isLoading = false;
               });
-
-              widget.cart.clearCart();
-
-              Navigator.of(context).pushNamed(OrdersScreen.routeName);
             },
+      textColor: Theme.of(context).primaryColor,
       child: _isLoading
-          ? CircularProgressIndicator()
-          : Text(
+          ? const CircularProgressIndicator()
+          : const Text(
               'Order Now',
             ),
-      textColor: Theme.of(context).primaryColor,
     );
   }
 }

@@ -11,43 +11,43 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: <Widget>[
           AppBar(
-            title: Text('Hello'),
+            title: const Text('Hello'),
             automaticallyImplyLeading: false,
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(
+            leading: const Icon(
               Icons.shop,
             ),
-            title: Text('Shop'),
+            title: const Text('Shop'),
             onTap: () {
-              Navigator.of(context).pushReplacementNamed('/');
+              Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: Icon(
+            leading: const Icon(
               Icons.payment,
             ),
-            title: Text('Orders'),
+            title: const Text('Orders'),
             onTap: () {
-              Navigator.of(context)
-                  .pushReplacementNamed(OrdersScreen.routeName);
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed(OrdersScreen.routeName);
             },
           ),
           ListTile(
-            leading: Icon(
+            leading: const Icon(
               Icons.edit,
             ),
-            title: Text('Manage Products'),
+            title: const Text('Manage Products'),
             onTap: () {
-              Navigator.of(context)
-                  .pushReplacementNamed(UserProductsScreen.routeName);
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed(UserProductsScreen.routeName);
             },
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text('Logout'),
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Logout'),
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).pushReplacementNamed('/');

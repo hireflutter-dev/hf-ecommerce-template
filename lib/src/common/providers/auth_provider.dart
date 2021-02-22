@@ -1,13 +1,11 @@
-import 'dart:convert';
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/http_exception.dart';
 
-class AuthProvider with ChangeNotifier {
+class AuthProvider extends ChangeNotifier {
   String _token;
   DateTime _expiryDate;
   String _userId;
@@ -32,38 +30,38 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _authenticate(
       String email, String password, String urlSegment) async {
-    final url =
+    final String url =
         'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment?key=' +
             'AIzaSyBTzzbcgD6hB2fji1AQxe8h1LP7WVAAHWU';
     try {
-      final response = await http.post(
+      final http.Response response = await http.post(
         url,
         body: json.encode(
-          {
+          <String, dynamic>{
             'email': email,
             'password': password,
             'returnSecureToken': true,
           },
         ),
       );
-      final responseData = json.decode(response.body);
+      final dynamic responseData = json.decode(response.body);
       if (responseData['error'] != null) {
-        throw HttpException(responseData['error']['message']);
+        throw HttpException(responseData['error']['message'] as String);
       }
-      _token = responseData['idToken'];
-      _userId = responseData['localId'];
+      _token = responseData['idToken'] as String;
+      _userId = responseData['localId'] as String;
       _expiryDate = DateTime.now().add(
         Duration(
           seconds: int.parse(
-            responseData['expiresIn'],
+            responseData['expiresIn'] as String,
           ),
         ),
       );
       _autoLogout();
       notifyListeners();
-      final prefs = await SharedPreferences.getInstance();
-      final userData = json.encode(
-        {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String userData = json.encode(
+        <String, String>{
           'token': _token,
           'userId': _userId,
           'expiryDate': _expiryDate.toIso8601String(),
@@ -71,7 +69,7 @@ class AuthProvider with ChangeNotifier {
       );
       prefs.setString('userData', userData);
     } catch (error) {
-      return Future.error(error);
+      return error;
     }
   }
 
@@ -84,19 +82,20 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> tryAutoLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey('userData')) {
       return false;
     }
-    final extractedUserData =
+    final Map<String, dynamic> extractedUserData =
         json.decode(prefs.getString('userData')) as Map<String, Object>;
-    final expiryDate = DateTime.parse(extractedUserData['expiryDate']);
+    final DateTime expiryDate =
+        DateTime.parse(extractedUserData['expiryDate'] as String);
 
     if (expiryDate.isBefore(DateTime.now())) {
       return false;
     }
-    _token = extractedUserData['token'];
-    _userId = extractedUserData['userId'];
+    _token = extractedUserData['token'] as String;
+    _userId = extractedUserData['userId'] as String;
     _expiryDate = expiryDate;
     notifyListeners();
     _autoLogout();
@@ -112,7 +111,7 @@ class AuthProvider with ChangeNotifier {
       _authTimer = null;
     }
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     // prefs.remove('userData');
     prefs.clear();
   }
@@ -121,7 +120,7 @@ class AuthProvider with ChangeNotifier {
     if (_authTimer != null) {
       _authTimer.cancel();
     }
-    final timeToExpiry = _expiryDate.difference(DateTime.now()).inSeconds;
+    final int timeToExpiry = _expiryDate.difference(DateTime.now()).inSeconds;
     _authTimer = Timer(Duration(seconds: timeToExpiry), logout);
   }
 }

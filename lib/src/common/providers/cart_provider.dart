@@ -1,34 +1,32 @@
 import 'package:flutter/foundation.dart';
 
 class CartItem {
-  final String id;
-  final String title;
-  final int quantity;
-  final double price;
-
-  CartItem({
+  const CartItem({
     @required this.id,
     @required this.title,
     @required this.quantity,
     @required this.price,
   });
+
+  final String id;
+  final String title;
+  final int quantity;
+  final double price;
 }
 
-class CartProvider with ChangeNotifier {
-  Map<String, CartItem> _items = {};
+class CartProvider extends ChangeNotifier {
+  Map<String, CartItem> _items = <String, CartItem>{};
 
-  Map<String, CartItem> get items {
-    return {..._items};
-  }
+  Map<String, CartItem> get items => <String, CartItem>{..._items};
 
   int get itemCount {
     return _items.length;
   }
 
   double get totalAmount {
-    var total = 0.00;
+    double total = 0.00;
 
-    _items.forEach((key, cartItem) {
+    _items.forEach((String key, CartItem cartItem) {
       total += cartItem.price * cartItem.quantity;
     });
 
@@ -43,13 +41,14 @@ class CartProvider with ChangeNotifier {
     if (_items.containsKey(productId)) {
       // change quantity...
       _items.update(
-          productId,
-          (existingCartItem) => CartItem(
-                id: existingCartItem.id,
-                title: existingCartItem.title,
-                quantity: existingCartItem.quantity + 1,
-                price: existingCartItem.price,
-              ));
+        productId,
+        (CartItem existingCartItem) => CartItem(
+          id: existingCartItem.id,
+          title: existingCartItem.title,
+          quantity: existingCartItem.quantity + 1,
+          price: existingCartItem.price,
+        ),
+      );
     } else {
       _items.putIfAbsent(
         productId,
@@ -71,7 +70,7 @@ class CartProvider with ChangeNotifier {
     if (_items[productId].quantity > 1) {
       _items.update(
         productId,
-        (existingCartItem) => CartItem(
+        (CartItem existingCartItem) => CartItem(
           id: existingCartItem.id,
           title: existingCartItem.title,
           quantity: existingCartItem.quantity - 1,
@@ -89,7 +88,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void clearCart() {
-    _items = {};
+    _items = <String, CartItem>{};
     notifyListeners();
   }
 }

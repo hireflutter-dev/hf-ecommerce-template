@@ -4,97 +4,83 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class OrderItem {
-  final String id;
-  final double amount;
-  final List<CartItem> products;
-  final DateTime dateTime;
-
   OrderItem({
     @required this.id,
     @required this.amount,
     @required this.products,
     @required this.dateTime,
   });
+
+  final String id;
+  final double amount;
+  final List<CartItem> products;
+  final DateTime dateTime;
 }
 
-class OrdersProvider with ChangeNotifier {
+class OrdersProvider extends ChangeNotifier {
+  OrdersProvider(this.authToken, this.userId, this._orders);
+
   final String authToken;
   final String userId;
 
-  List<OrderItem> _orders = [];
-
-  OrdersProvider(this.authToken, this.userId, this._orders);
+  List<OrderItem> _orders = <OrderItem>[];
 
   List<OrderItem> get orders {
-    return [..._orders];
+    return <OrderItem>[..._orders];
   }
 
   Future<void> fetchAndSetOrders() async {
-    final url = 'https://ecomproject-daeb7.firebaseio.com/' +
-        'orders/' +
-        userId +
-        '.json' +
-        '?auth=' +
-        authToken;
+    final String url =
+        'https://ecomproject-daeb7.firebaseio.com/orders/$userId.json?auth=$authToken';
 
-    final response = await http.get(url);
-    final List<OrderItem> loadedOrders = [];
-    print(json.decode(response.body));
-    final extractedData = json.decode(response.body) as Map<String, dynamic>;
+    final http.Response response = await http.get(url);
+    final List<OrderItem> loadedOrders = <OrderItem>[];
+    final Map<String, dynamic> extractedData =
+        json.decode(response.body) as Map<String, dynamic>;
     if (extractedData == null) {
       return;
     }
 
-    print('Extracted order data: $extractedData');
-
-    try {
-      extractedData.forEach((orderId, ordersData) {
-        loadedOrders.add(
-          OrderItem(
-            id: orderId,
-            amount: ordersData['amount'],
-            dateTime: DateTime.parse(ordersData['dateTime']),
-            products: (ordersData['products'] as List<dynamic>)
-                .map(
-                  (item) => CartItem(
-                    id: item['id'],
-                    price: item['price'],
-                    quantity: item['quantity'],
-                    title: item['title'],
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      });
-      _orders = loadedOrders.reversed.toList();
-      notifyListeners();
-    } catch (error) {
-      print(error);
-    }
+    extractedData.forEach((String orderId, dynamic ordersData) {
+      loadedOrders.add(
+        OrderItem(
+          id: orderId,
+          amount: ordersData['amount'] as double,
+          dateTime: DateTime.parse(ordersData['dateTime'] as String),
+          products: (ordersData['products'] as List<dynamic>)
+              .map(
+                (dynamic item) => CartItem(
+                  id: item['id'] as String,
+                  price: item['price'] as double,
+                  quantity: item['quantity'] as int,
+                  title: item['title'] as String,
+                ),
+              )
+              .toList(),
+        ),
+      );
+    });
+    _orders = loadedOrders.reversed.toList();
+    notifyListeners();
   }
 
   //error handling TBD
 
-  Future<void> addOrder(List<CartItem> cartProducts, double total) async {
-    final url = 'https://ecomproject-daeb7.firebaseio.com/' +
-        'orders/' +
-        userId +
-        '.json' +
-        '?auth=' +
-        authToken;
+  Future<String> addOrder(List<CartItem> cartProducts, double total) async {
+    final String url =
+        'https://ecomproject-daeb7.firebaseio.com/orders/$userId.json?auth=$authToken';
 
-    final timestamp = DateTime.now();
+    final DateTime timestamp = DateTime.now();
 
     try {
-      final response = await http.post(
+      final http.Response response = await http.post(
         url,
         body: json.encode(
-          {
+          <String, dynamic>{
             'amount': total,
             'dateTime': timestamp.toIso8601String(),
             'products': cartProducts
-                .map((cp) => {
+                .map((CartItem cp) => <String, dynamic>{
                       'id': cp.id,
                       'title': cp.title,
                       'quantity': cp.quantity,
@@ -108,17 +94,17 @@ class OrdersProvider with ChangeNotifier {
       _orders.insert(
         0,
         OrderItem(
-          id: json.decode(response.body)['name'],
+          id: json.decode(response.body)['name'] as String,
           amount: total,
           products: cartProducts,
           dateTime: timestamp,
         ),
       );
-      print('Adding product: ${json.decode(response.body)['name']}');
+
       notifyListeners();
+      return 'success';
     } catch (error) {
-      print(error);
-      throw error;
+      return 'failed';
     }
   }
 }

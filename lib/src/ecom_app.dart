@@ -1,5 +1,6 @@
 import 'package:ecom/src/common/providers/auth_provider.dart';
 import 'package:ecom/src/common/providers/cart_provider.dart';
+import 'package:ecom/src/common/providers/individual_product_provider.dart';
 import 'package:ecom/src/common/providers/orders_provider.dart';
 import 'package:ecom/src/common/providers/products_provider.dart';
 import 'package:ecom/src/ui/auth_screen.dart';
@@ -10,40 +11,47 @@ import 'package:ecom/src/ui/orders_screen.dart';
 import 'package:ecom/src/ui/splash_screen.dart';
 import 'package:ecom/src/ui/user_products_screen.dart';
 import 'package:flutter/material.dart';
-import 'ui/product_detail_screen.dart';
-
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
+
+import 'ui/product_detail_screen.dart';
 
 class EcomApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (ctx) => AuthProvider(),
+      providers: <SingleChildWidget>[
+        ChangeNotifierProvider<AuthProvider>(
+          create: (BuildContext context) => AuthProvider(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
-          update: (ctx, auth, previousProducts) => ProductsProvider(
+          update: (BuildContext context, AuthProvider auth,
+                  ProductsProvider previousProducts) =>
+              ProductsProvider(
             auth.token,
             auth.userId,
-            previousProducts == null ? [] : previousProducts.items,
+            previousProducts == null
+                ? <IndividualProduct>[]
+                : previousProducts.items,
           ),
-          create: (_) => ProductsProvider('', '', []),
+          create: (_) => ProductsProvider('', '', <IndividualProduct>[]),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => CartProvider(),
+        ChangeNotifierProvider<CartProvider>(
+          create: (BuildContext context) => CartProvider(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
-          update: (ctx, auth, previousOrders) => OrdersProvider(
+          update: (BuildContext context, AuthProvider auth,
+                  OrdersProvider previousOrders) =>
+              OrdersProvider(
             auth.token,
             auth.userId,
-            previousOrders == null ? [] : previousOrders.orders,
+            previousOrders == null ? <OrderItem>[] : previousOrders.orders,
           ),
-          create: (_) => OrdersProvider('', '', []),
+          create: (_) => OrdersProvider('', '', <OrderItem>[]),
         ),
       ],
       child: Consumer<AuthProvider>(
-        builder: (ctx, auth, _) => MaterialApp(
+        builder: (BuildContext context, AuthProvider auth, _) => MaterialApp(
           title: 'eCom',
           theme: ThemeData(
             primarySwatch: Colors.purple,
@@ -52,20 +60,24 @@ class EcomApp extends StatelessWidget {
           ),
           home: auth.isAuth
               ? HomeScreen()
-              : FutureBuilder(
+              : FutureBuilder<bool>(
                   future: auth.tryAutoLogin(),
-                  builder: (ctx, authResultSnapshot) =>
+                  builder: (BuildContext context,
+                          AsyncSnapshot<bool> authResultSnapshot) =>
                       authResultSnapshot.connectionState ==
                               ConnectionState.waiting
                           ? SplashScreen()
                           : AuthScreen(),
                 ),
-          routes: {
-            ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-            CartScreen.routeName: (ctx) => CartScreen(),
-            OrdersScreen.routeName: (ctx) => OrdersScreen(),
-            UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-            EditProductScreen.routeName: (ctx) => EditProductScreen(),
+          routes: <String, WidgetBuilder>{
+            ProductDetailScreen.routeName: (BuildContext context) =>
+                ProductDetailScreen(),
+            CartScreen.routeName: (BuildContext context) => CartScreen(),
+            OrdersScreen.routeName: (BuildContext context) => OrdersScreen(),
+            UserProductsScreen.routeName: (BuildContext context) =>
+                UserProductsScreen(),
+            EditProductScreen.routeName: (BuildContext context) =>
+                EditProductScreen(),
           },
         ),
       ),
